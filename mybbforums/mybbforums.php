@@ -1,0 +1,16 @@
+<?php
+if (!defined('IN_MYBB')) { die('Direct initialization of this file is not allowed.'); }
+$plugins->add_hook('admin_config_menu','mybbforums_admin_menu');
+$plugins->add_hook('admin_config_action_handler','mybbforums_admin_action');
+$plugins->add_hook('admin_config_permissions','mybbforums_admin_permissions');
+function mybbforums_admin_menu(&$sub_menu){$sub_menu[]=['id'=>'mybbforums','title'=>'MyBBForums','link'=>'index.php?module=config-mybbforums'];}
+function mybbforums_admin_action(&$actions){$actions['mybbforums']=['active'=>'mybbforums','file'=>'mybbforums.php'];}
+function mybbforums_admin_permissions(&$admin_permissions){$admin_permissions['mybbforums']='Can manage MyBBForums listing';}
+function mybbforums_info(){return['name'=>'MyBBForums Toplist','description'=>'Manage and measure your MyBB forum listing in the Admin CP. Requires MyBB 1.8.38+ and PHP 8.1–8.4 with Sodium and cURL.','website'=>'','author'=>'MyBBForums','authorsite'=>'','version'=>'0.1.0','compatibility'=>'18*'];}
+function mybbforums_uninstall_remote_cleanup(array $settings,callable $request,?string &$error=null):bool{if(empty($settings['credential']))return true;$ok=true;$operations=[];if(!empty($settings['listing_id']))$operations[]='/listings/'.$settings['listing_id'].'/unpublish';$operations[]='/installations/'.$settings['installation_id'].'/credentials/revoke';foreach($operations as$path){try{$request('POST',$path);}catch(Throwable $e){$ok=false;if($error===null)$error=substr($e->getMessage(),0,240);}}return$ok;}
+function mybbforums_uninstall_clear_local_state(?string $directory):void{if(!$directory)return;foreach(['settings.php','queue.json']as$file)if(is_file($directory.'/'.$file))@unlink($directory.'/'.$file);@rmdir($directory);}
+function mybbforums_install(){global $db;if(!$db->table_exists('mybbforums_config'))$db->write_query('CREATE TABLE '.TABLE_PREFIX.'mybbforums_config (id int unsigned NOT NULL PRIMARY KEY DEFAULT 1)');$db->insert_query('tasks',['title'=>'MyBBForums hourly metrics','description'=>'Collect and report aggregate activity statistics.','file'=>'mybbforums','minute'=>'0','hour'=>'*','day'=>'*','month'=>'*','weekday'=>'*','enabled'=>1,'logging'=>0]);}
+function mybbforums_is_installed(){global $db;return $db->table_exists('mybbforums_config');}
+function mybbforums_uninstall(){global $db;$dir=null;try{require_once MYBB_ROOT.'inc/plugins/mybbforums/lib.php';$dir=mybbforums_path();$s=mybbforums_settings();$error=null;$ok=mybbforums_uninstall_remote_cleanup($s,static function(string $method,string $path)use($s):void{mybbforums_signed($s,$method,$path,[]);},$error);if(!$ok)error_log('MyBBForums uninstall could not complete remote cleanup; the local credentials and queued metrics will still be removed.');}catch(Throwable){}mybbforums_uninstall_clear_local_state($dir);$db->drop_table('mybbforums_config');$db->delete_query('tasks',"file='mybbforums'");}
+function mybbforums_activate(){global $db;if(isset($db)&&$db->table_exists('tasks'))$db->update_query('tasks',['enabled'=>1],"file='mybbforums'");}
+function mybbforums_deactivate(){global $db;if(isset($db)&&$db->table_exists('tasks'))$db->update_query('tasks',['enabled'=>0],"file='mybbforums'");}
