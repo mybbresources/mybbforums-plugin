@@ -74,6 +74,10 @@ Each public forum profile has a **Report abuse or a problem** form. Visitors can
 
 The plugin supports MyBB 1.8.38+ within the 1.8 series and PHP 8.1–8.4 with Sodium and cURL. Admin CP management, service synchronization, and metric submission fail closed with a clear error outside that runtime range. The full project suite has been exercised on PHP 8.1–8.4. A disposable live MyBB 1.8.39 installation on PHP 8.4/MariaDB 10.11.6 passed plugin activation, configuration-page rendering, task toggling, and aggregate metric collection against native MyBB tables. The metric collector also passes on MySQL 5.7.44; other MyBB versions remain unverified.
 
+## Weekly stats audit
+
+For a confirmed, published listing, MyBBForums can send a weekly, short-lived challenge to `mybbforums-verify.php`. The endpoint accepts only a request authenticated with the private per-installation audit secret, checks the forum URL and installation binding, rejects replayed nonces, and returns the same four aggregate 7-day and 30-day metrics used by scheduled reports. It does not return member or post records. The Admin CP connection status shows the latest audit outcome when the service has completed one. Keep the verification file deployed at the MyBB base path and protect the private MyBBForums data directory from web access.
+
 From the companion website repository root, set `MYBB_CORE_ROOT=/path/to/mybb` and run `php website/tests/mybb-plugin-system.php` to validate MyBB hook registration using MyBB's `pluginSystem` class. This source integration check does not boot Admin CP or its database.
 
 For a read-only collector check against a disposable configured MyBB install, set `MYBB_METRICS_ROOT=/path/to/disposable-mybb` and run `php website/tests/mybb-metrics-live.php` from the companion website repository root. The check uses the configured `mysqli` or `mysql_pdo` driver and executes only bounded aggregate queries; it does not insert test rows. The full website `composer test` suite skips this check unless `MYBB_METRICS_ROOT` is set.
