@@ -9,6 +9,13 @@ if [ ! -f "$SITE/inc/class_core.php" ]; then
     cp -a "$SEED/." "$SITE/"
 fi
 
+mkdir -p \
+    "$SITE/inc" \
+    "$SITE/cache/themes" \
+    "$SITE/uploads/avatars" \
+    "$SITE/uploads/profile_images" \
+    "$SITE/admin/backups"
+
 chown -R www-data:www-data /var/lib/mybbforums-demo
 chmod 0755 "$SITE"
 
@@ -21,4 +28,6 @@ fi
 sed -ri "s!/var/www/html!$SITE!g" \
     /etc/apache2/sites-available/*.conf /etc/apache2/apache2.conf
 
+apache2ctl configtest
+printf 'Starting MyBBForums demo site at %s\n' "$SITE"
 exec apache2-foreground
