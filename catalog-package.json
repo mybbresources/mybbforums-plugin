@@ -1,0 +1,50 @@
+{
+  "manifest": {
+    "schema_version": 1,
+    "slug": "mybbforums-plugin",
+    "name": "MyBBForums Toplist",
+    "description": "Manage and measure your MyBB forum listing in the Admin CP.",
+    "authors": [
+      "MyBBForums"
+    ],
+    "license": "MIT",
+    "source": {
+      "type": "original"
+    },
+    "requirements": {
+      "mybb": ">=1.8.38 <1.9.0",
+      "php": ">=8.1 <8.5"
+    },
+    "uninstall": {
+      "remove_owned_files": true,
+      "preserve_user_data": true
+    }
+  },
+  "files": [
+    {
+      "source": "mybbforums/mybbforums.php",
+      "destination": "inc/plugins/mybbforums.php",
+      "role": "plugin"
+    },
+    {
+      "source": "mybbforums/inc/plugins/lib.php",
+      "destination": "inc/plugins/mybbforums/lib.php",
+      "role": "other"
+    },
+    {
+      "source": "mybbforums/inc/tasks/mybbforums.php",
+      "destination": "inc/tasks/mybbforums.php",
+      "role": "other"
+    },
+    {
+      "source": "mybbforums/admin/modules/config/mybbforums.php",
+      "destination": "admin/modules/config/mybbforums.php",
+      "role": "admin"
+    },
+    {
+      "source": "mybbforums/mybbforums-verify.php",
+      "destination": "mybbforums-verify.php",
+      "role": "other"
+    }
+  ]
+}
